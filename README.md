@@ -26,5 +26,6 @@ This project visualizes the top 5 most played artists using a bar chart. The cha
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/your-repo-name.git
-   cd your-repo-name
+   git clone https://github.com/okjazim/Spotify-Data-Demo.git
+   cd Spotify-Data-Demo
+   
