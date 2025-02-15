@@ -1,6 +1,6 @@
 # Spotify Data Demo
 
-![Spotify Logo](https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green-768x231.png)
+![image](https://github.com/user-attachments/assets/3d70286d-a7fb-453c-a874-18088f2e6015)
 
 ## Table of Contents
 
