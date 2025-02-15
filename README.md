@@ -1,6 +1,6 @@
 # Spotify Data Demo
 
-![image](https://github.com/user-attachments/assets/3d70286d-a7fb-453c-a874-18088f2e6015)
+![image](https://github.com/user-attachments/assets/dec765b6-1478-4dbb-97d5-04c54a595075)
 
 ## Table of Contents
 
