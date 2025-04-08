@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Top 5 Most Played Artists</title>
+  <link rel="icon" href="https://storage.googleapis.com/pr-newsroom-wp/1/2023/05/Spotify_Primary_Logo_RGB_Green.png" type="image/x-icon">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-image: url('https://images.unsplash.com/photo-1623018035813-9cfb5b502e04?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+      background-size: cover;
+      background-position: center;
+    }
+    .background-blur {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: inherit;
+      filter: blur(10px); /* Blur the background image */
+      z-index: 0;
+    }
+    .content {
+      position: relative;
+      z-index: 1;
+      background: white; /* Opaque white frame */
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+    h2 {
+      text-align: center;
+      color: #4a4a4a;
+    }
+    .bar {
+      fill-opacity: 0.8;
+      transition: fill-opacity 0.3s;
+    }
+    .bar:hover {
+      fill-opacity: 1;
+    }
+    .axis-label {
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .x-axis text {
+      font-size: 12px;
+      fill: #555;
+    }
+    .y-axis text {
+      font-size: 12px;
+      fill: #555;
+    }
+    .tooltip {
+      position: absolute;
+      text-align: center;
+      width: auto;
+      height: auto;
+      padding: 8px;
+      font: 12px sans-serif;
+      background: lightsteelblue;
+      border: 0px;
+      border-radius: 8px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+      transform: translate(-50%, -50%); /* Center tooltip */
+    }
+    .x-axis .tick text {
+      fill: #0073e6;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .buttons {
+      margin-bottom: 20px;
+    }
+    .buttons button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #0073e6;
+      color: white;
+      transition: background-color 0.3s;
+    }
+    .buttons button:hover {
+      background-color: #005bb5;
+    }
+  </style>
+</head>
+<body>
+  <div class="background-blur"></div>
+  <div class="content">
+    <h2>Top 5 Most Played Artists</h2>
+    <div class="buttons">
+      <button onclick="loadChart('top_5_artists_last_10_songs.csv')">Last 10 Songs</button>
+      <button onclick="loadChart('top_5_artists_last_20_songs.csv')">Last 20 Songs</button>
+      <button onclick="loadChart('top_5_artists_last_30_songs.csv')">Last 30 Songs</button>
+      <button onclick="loadChart('top_5_artists_last_40_songs.csv')">Last 40 Songs</button>
+      <button onclick="loadChart('top_5_artists_last_50_songs.csv')">Last 50 Songs</button>
+    </div>
+    <svg width="800" height="400"></svg>
+    <div class="tooltip"></div>
+  </div>
+
+  <script>
+    function loadChart(file) {
+      d3.csv(file).then(function(data) {
+        let artistData = data.map(d => ({ artist: d.artist_name, count: +d.play_count, link: d.artist_link }));
+
+        let width = 800, height = 400;
+        let margin = { top: 20, right: 20, bottom: 40, left: 60 };
+        let innerWidth = width - margin.left - margin.right;
+        let innerHeight = height - margin.top - margin.bottom;
+
+        let svg = d3.select('svg')
+          .attr('width', width)
+          .attr('height', height);
+
+        svg.selectAll('*').remove(); // Clear previous chart
+
+        let chart = svg.append('g')
+          .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        let color = d3.scaleOrdinal(d3.schemeCategory10);
+
+        let x = d3.scaleBand()
+          .domain(artistData.map(d => d.artist))
+          .range([0, innerWidth])
+          .padding(0.2);
+
+        let y = d3.scaleLinear()
+          .domain([0, d3.max(artistData, d => d.count)])
+          .nice()
+          .range([innerHeight, 0]);
+
+        chart.selectAll('.bar')
+          .data(artistData)
+          .enter().append('rect')
+          .attr('class', 'bar')
+          .attr('x', d => x(d.artist))
+          .attr('y', d => y(d.count))
+          .attr('width', x.bandwidth())
+          .attr('height', d => innerHeight - y(d.count))
+          .attr('fill', (d, i) => color(i))
+          .on('mouseover', function(event, d) {
+            let [x, y] = d3.pointer(event, svg.node());
+            d3.select('.tooltip')
+              .style('opacity', 1)
+              .html(`Artist: ${d.artist}<br>Plays: ${d.count}`)
+              .style('left', `${x}px`)
+              .style('top', `${y}px`);
+          })
+          .on('mousemove', function(event) {
+            let [x, y] = d3.pointer(event, svg.node());
+            d3.select('.tooltip')
+              .style('left', `${x}px`)
+              .style('top', `${y}px`);
+          })
+          .on('mouseout', function() {
+            d3.select('.tooltip')
+              .style('opacity', 0);
+          });
+
+        chart.append('g')
+          .attr('class', 'x-axis')
+          .attr('transform', `translate(0,${innerHeight})`)
+          .call(d3.axisBottom(x).tickSize(0))
+          .selectAll('text')
+          .on('click', function(event, d) {
+            window.open(artistData.find(a => a.artist === d).link, '_blank');
+          });
+
+        chart.append('g')
+          .attr('class', 'y-axis')
+          .call(d3.axisLeft(y).ticks(5));
+
+        chart.selectAll('.x-axis text')
+          .style('text-anchor', 'middle')
+          .style('font-size', '14px')
+          .style('font-weight', 'bold')
+          .style('margin-top', '10px');
+
+        chart.selectAll('.x-axis text')
+          .style('transform', 'translateY(10px)');
+      });
+    }
+
+    // Load the default chart (e.g., last 10 songs)
+    loadChart('top_5_artists_last_10_songs.csv');
+  </script>
+</body>
+</html>
