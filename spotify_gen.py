@@ -7,19 +7,19 @@ import os
 
 load_dotenv()
 
-# Spotify API credentials
-
 SPOTIPY_CLIENT_ID = os.getenv('SPOTIPY_CLIENT_ID')
 SPOTIPY_CLIENT_SECRET = os.getenv('SPOTIPY_CLIENT_SECRET')
 SPOTIPY_REDIRECT_URI = os.getenv('SPOTIPY_REDIRECT_URI')
 
-# Authenticate and create Spotify client
 sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
     client_id=SPOTIPY_CLIENT_ID,
     client_secret=SPOTIPY_CLIENT_SECRET,
     redirect_uri=SPOTIPY_REDIRECT_URI,
     scope='user-read-recently-played'
 ))
+
+csv_dir = 'csv'
+os.makedirs(csv_dir, exist_ok=True)
 
 def fetch_recently_played(limit):
     """Fetch the last `limit` number of recently played tracks."""
@@ -35,14 +35,12 @@ def fetch_recently_played(limit):
         else:
             next_url = None
 
-    return results[:limit]  # Ensure only the requested number of songs are returned
+    return results[:limit]  
 
 def fetch_played_songs(song_count):
-    """Fetch the last `song_count` played songs and save to CSV."""
-    # Fetch recently played tracks
+    """Fetch the last `song_count` played songs and save to CSV in `csv/` directory."""
     results = fetch_recently_played(song_count)
 
-    # Extract relevant data for each track
     song_data = []
     artist_counter = Counter()
     artist_links = {}
@@ -62,20 +60,16 @@ def fetch_played_songs(song_count):
             artist_counter[name] += 1
             artist_links[name] = url
 
-    # Create DataFrame for songs
     df_songs = pd.DataFrame(song_data)
 
-    # Create DataFrame for top 5 artists
     top_artists = artist_counter.most_common(5)
     df_artists = pd.DataFrame(top_artists, columns=['artist_name', 'play_count'])
     df_artists['artist_link'] = df_artists['artist_name'].map(artist_links)
 
-    # Save to CSV
-    df_songs.to_csv(f'last_{song_count}_played_songs.csv', index=False)
-    df_artists.to_csv(f'top_5_artists_last_{song_count}_songs.csv', index=False)
-    print(f"CSV files for last {song_count} played songs and top 5 artists generated successfully!")
+    df_songs.to_csv(os.path.join(csv_dir, f'last_{song_count}_played_songs.csv'), index=False)
+    df_artists.to_csv(os.path.join(csv_dir, f'top_5_artists_last_{song_count}_songs.csv'), index=False)
+    print(f"CSV files for last {song_count} played songs and top 5 artists saved in '{csv_dir}/' folder!")
 
-# Fetch and generate CSV files for different song counts
 fetch_played_songs(10)
 fetch_played_songs(20)
 fetch_played_songs(30)
